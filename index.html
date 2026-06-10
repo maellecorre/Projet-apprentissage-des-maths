@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathématiques — Apprendre en s'amusant</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #3b3b8f;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6b6bbb;
+      text-align: center;
+      font-size: 1rem;
+      margin-bottom: 30px;
+    }
+
+    /* ---- ÉCRANS ---- */
+    .screen { display: none; width: 100%; max-width: 800px; animation: fadeIn .3s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ---- GRILLE CLASSES ---- */
+    .class-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .class-card {
+      background: white;
+      border-radius: 18px;
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform .15s, box-shadow .15s, border-color .15s;
+      box-shadow: 0 3px 10px rgba(0,0,0,.08);
+    }
+
+    .class-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,.13); }
+
+    .class-card .emoji { font-size: 2.8rem; display: block; margin-bottom: 10px; }
+    .class-card .name { font-size: 1.25rem; font-weight: 700; color: #3b3b8f; }
+    .class-card .age  { font-size: .85rem; color: #888; margin-top: 4px; }
+
+    .class-card.cp    { border-color: #ff8fab; background: #fff0f5; }
+    .class-card.ce1   { border-color: #ffa552; background: #fff5ec; }
+    .class-card.ce2   { border-color: #ffd43b; background: #fffce8; }
+    .class-card.cm1   { border-color: #69db7c; background: #f0fff4; }
+    .class-card.cm2   { border-color: #4dabf7; background: #f0f8ff; }
+    .class-card.sixieme { border-color: #b197fc; background: #f5f0ff; }
+
+    /* ---- GRILLE EXERCICES ---- */
+    .exo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .exo-card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px 12px;
+      text-align: center;
+      cursor: pointer;
+      border: 3px solid #e0e0f0;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .exo-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,.12); border-color: #7c7cf8; }
+    .exo-card .emoji { font-size: 2.4rem; display: block; margin-bottom: 8px; }
+    .exo-card .name  { font-size: 1rem; font-weight: 700; color: #3b3b8f; }
+
+    /* ---- ZONE EXERCICE ---- */
+    #exo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .badge-class {
+      background: #3b3b8f;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: .85rem;
+      font-weight: 600;
+    }
+
+    .progress-bar-wrap {
+      flex: 1;
+      margin: 0 16px;
+      background: #dde3ff;
+      border-radius: 10px;
+      height: 12px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #7c7cf8, #b197fc);
+      border-radius: 10px;
+      transition: width .4s ease;
+    }
+
+    .score-display {
+      font-weight: 700;
+      color: #3b3b8f;
+      font-size: .9rem;
+      white-space: nowrap;
+    }
+
+    .question-box {
+      background: white;
+      border-radius: 20px;
+      padding: 36px 30px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+      margin-bottom: 24px;
+    }
+
+    .question-num {
+      font-size: .85rem;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    .question-text {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2b2b6f;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    /* Réponse numérique */
+    .answer-input {
+      font-size: 1.8rem;
+      width: 160px;
+      text-align: center;
+      border: 3px solid #b0b0e8;
+      border-radius: 14px;
+      padding: 10px 16px;
+      outline: none;
+      color: #2b2b6f;
+      background: #f7f7ff;
+      transition: border-color .2s;
+    }
+
+    .answer-input:focus { border-color: #7c7cf8; background: white; }
+
+    /* QCM */
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .choice-btn {
+      font-size: 1.2rem;
+      font-weight: 600;
+      padding: 16px;
+      border-radius: 14px;
+      border: 3px solid #d0d0f0;
+      background: #f7f7ff;
+      cursor: pointer;
+      color: #3b3b8f;
+      transition: background .15s, border-color .15s, transform .1s;
+    }
+
+    .choice-btn:hover { background: #eeeeff; border-color: #7c7cf8; transform: scale(1.02); }
+    .choice-btn.correct { background: #d3f9d8; border-color: #40c057; color: #1a6b2a; }
+    .choice-btn.wrong   { background: #ffe3e3; border-color: #f03e3e; color: #a00; }
+
+    /* Bouton valider */
+    .btn-validate {
+      display: block;
+      margin: 0 auto;
+      margin-top: 20px;
+      background: #7c7cf8;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 14px 40px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      box-shadow: 0 4px 12px rgba(124,124,248,.4);
+    }
+
+    .btn-validate:hover { background: #6060e8; transform: scale(1.03); }
+    .btn-validate:disabled { background: #bbb; box-shadow: none; cursor: default; transform: none; }
+
+    /* Feedback */
+    .feedback {
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 12px 20px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .feedback.correct { background: #d3f9d8; color: #1a6b2a; display: block; }
+    .feedback.wrong   { background: #ffe3e3; color: #a00; display: block; }
+
+    /* Bouton retour */
+    .btn-back {
+      background: none;
+      border: 2px solid #b0b0e8;
+      color: #7070c0;
+      font-size: .9rem;
+      padding: 8px 18px;
+      border-radius: 20px;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background .15s;
+    }
+
+    .btn-back:hover { background: #eeeeff; }
+
+    /* ---- RÉSULTATS ---- */
+    .result-box {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 30px;
+      text-align: center;
+      box-shadow: 0 6px 24px rgba(0,0,0,.1);
+    }
+
+    .result-emoji { font-size: 5rem; display: block; margin-bottom: 16px; }
+    .result-title { font-size: 1.8rem; font-weight: 700; color: #3b3b8f; margin-bottom: 8px; }
+    .result-score { font-size: 3rem; font-weight: 800; margin: 20px 0; }
+    .result-msg   { color: #555; font-size: 1rem; margin-bottom: 28px; line-height: 1.6; }
+
+    .stars { font-size: 2.5rem; margin-bottom: 16px; letter-spacing: 4px; }
+
+    .result-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    .btn-primary {
+      background: #7c7cf8;
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .btn-primary:hover { background: #6060e8; }
+
+    .btn-secondary {
+      background: white;
+      color: #7c7cf8;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 12px 28px;
+      border: 2px solid #7c7cf8;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .btn-secondary:hover { background: #eeeeff; }
+
+    /* Responsive */
+    @media (max-width: 550px) {
+      .class-grid, .exo-grid { grid-template-columns: repeat(2, 1fr); }
+      .question-text { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== ÉCRAN 1 : CHOIX DE CLASSE ===== -->
+<div id="screen-class" class="screen active">
+  <h1>🧮 Apprendre les maths</h1>
+  <p class="subtitle">Choisis ta classe pour commencer !</p>
+  <div class="class-grid">
+    <div class="class-card cp"      onclick="chooseClass('CP')">
+      <span class="emoji">🌱</span>
+      <div class="name">CP</div>
+      <div class="age">6 ans</div>
+    </div>
+    <div class="class-card ce1"     onclick="chooseClass('CE1')">
+      <span class="emoji">⭐</span>
+      <div class="name">CE1</div>
+      <div class="age">7 ans</div>
+    </div>
+    <div class="class-card ce2"     onclick="chooseClass('CE2')">
+      <span class="emoji">🌟</span>
+      <div class="name">CE2</div>
+      <div class="age">8 ans</div>
+    </div>
+    <div class="class-card cm1"     onclick="chooseClass('CM1')">
+      <span class="emoji">🚀</span>
+      <div class="name">CM1</div>
+      <div class="age">9 ans</div>
+    </div>
+    <div class="class-card cm2"     onclick="chooseClass('CM2')">
+      <span class="emoji">🏆</span>
+      <div class="name">CM2</div>
+      <div class="age">10 ans</div>
+    </div>
+    <div class="class-card sixieme" onclick="chooseClass('6ème')">
+      <span class="emoji">🎓</span>
+      <div class="name">6ème</div>
+      <div class="age">11 ans</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ÉCRAN 2 : CHOIX D'EXERCICE ===== -->
+<div id="screen-exo" class="screen">
+  <h1 id="exo-title">Bonjour !</h1>
+  <p class="subtitle">Quel exercice veux-tu faire ?</p>
+  <div class="exo-grid" id="exo-grid"></div>
+  <div style="text-align:center; margin-top:20px;">
+    <button class="btn-back" onclick="goTo('screen-class')">← Changer de classe</button>
+  </div>
+</div>
+
+<!-- ===== ÉCRAN 3 : EXERCICE ===== -->
+<div id="screen-play" class="screen">
+  <div id="exo-header">
+    <span class="badge-class" id="badge-class"></span>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+    </div>
+    <span class="score-display" id="score-display">0 / 0</span>
+  </div>
+
+  <div class="question-box">
+    <div class="question-num" id="question-num"></div>
+    <div class="question-text" id="question-text"></div>
+    <div id="input-zone"></div>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+  <button class="btn-validate" id="btn-validate" onclick="validate()">Valider ✔</button>
+  <div style="text-align:center;">
+    <button class="btn-back" onclick="goTo('screen-exo')">← Changer d'exercice</button>
+  </div>
+</div>
+
+<!-- ===== ÉCRAN 4 : RÉSULTATS ===== -->
+<div id="screen-result" class="screen">
+  <div class="result-box">
+    <span class="result-emoji" id="result-emoji"></span>
+    <div class="result-title" id="result-title"></div>
+    <div class="stars" id="result-stars"></div>
+    <div class="result-score" id="result-score"></div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="result-btns">
+      <button class="btn-primary"   onclick="replay()">Rejouer 🔁</button>
+      <button class="btn-secondary" onclick="goTo('screen-exo')">Autre exercice</button>
+      <button class="btn-secondary" onclick="goTo('screen-class')">Changer de classe</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ====================================================
+     CONFIGURATION DES EXERCICES PAR CLASSE
+  ==================================================== */
+  const CLASSES = {
+    'CP':   { label: 'CP',   color: '#ff8fab', max: 10,  tables: [2],          geoLevel: 1 },
+    'CE1':  { label: 'CE1',  color: '#ffa552', max: 20,  tables: [2,3,4],      geoLevel: 1 },
+    'CE2':  { label: 'CE2',  color: '#ffd43b', max: 50,  tables: [2,3,4,5,6],  geoLevel: 2 },
+    'CM1':  { label: 'CM1',  color: '#69db7c', max: 100, tables: [2,3,4,5,6,7,8,9], geoLevel: 2 },
+    'CM2':  { label: 'CM2',  color: '#4dabf7', max: 999, tables: [2,3,4,5,6,7,8,9,10], geoLevel: 3 },
+    '6ème': { label: '6ème', color: '#b197fc', max: 999, tables: [2,3,4,5,6,7,8,9,10,11,12], geoLevel: 3 },
+  };
+
+  const EXO_TYPES = [
+    { id: 'addition',       emoji: '➕', name: 'Addition',       classes: ['CP','CE1','CE2','CM1','CM2','6ème'] },
+    { id: 'soustraction',   emoji: '➖', name: 'Soustraction',   classes: ['CP','CE1','CE2','CM1','CM2','6ème'] },
+    { id: 'multiplication', emoji: '✖️', name: 'Multiplication', classes: ['CE1','CE2','CM1','CM2','6ème'] },
+    { id: 'division',       emoji: '➗', name: 'Division',       classes: ['CE2','CM1','CM2','6ème'] },
+    { id: 'problemes',      emoji: '💡', name: 'Problèmes',      classes: ['CE1','CE2','CM1','CM2','6ème'] },
+    { id: 'geometrie',      emoji: '📐', name: 'Géométrie',      classes: ['CP','CE1','CE2','CM1','CM2','6ème'] },
+  ];
+
+  const TOTAL_QUESTIONS = 10;
+
+  let currentClass = null;
+  let currentExo   = null;
+  let questions    = [];
+  let qIndex       = 0;
+  let score        = 0;
+  let answered     = false;
+
+  /* ====================================================
+     NAVIGATION
+  ==================================================== */
+  function goTo(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function chooseClass(cls) {
+    currentClass = cls;
+    document.getElementById('exo-title').textContent = '📚 Classe ' + cls;
+    buildExoGrid();
+    goTo('screen-exo');
+  }
+
+  function buildExoGrid() {
+    const cfg = CLASSES[currentClass];
+    const grid = document.getElementById('exo-grid');
+    grid.innerHTML = '';
+    EXO_TYPES.forEach(t => {
+      if (!t.classes.includes(currentClass)) return;
+      const card = document.createElement('div');
+      card.className = 'exo-card';
+      card.innerHTML = `<span class="emoji">${t.emoji}</span><div class="name">${t.name}</div>`;
+      card.onclick = () => startExo(t.id);
+      grid.appendChild(card);
+    });
+  }
+
+  /* ====================================================
+     GÉNÉRATION DES QUESTIONS
+  ==================================================== */
+  function rand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function generateQuestion(type) {
+    const cfg = CLASSES[currentClass];
+    const M = cfg.max;
+
+    if (type === 'addition') {
+      const a = rand(1, M);
+      const b = rand(1, M);
+      return { text: `${a} + ${b} = ?`, answer: a + b, inputType: 'number' };
+    }
+
+    if (type === 'soustraction') {
+      let a = rand(1, M), b = rand(1, M);
+      if (b > a) [a, b] = [b, a];
+      return { text: `${a} − ${b} = ?`, answer: a - b, inputType: 'number' };
+    }
+
+    if (type === 'multiplication') {
+      const table = cfg.tables[rand(0, cfg.tables.length - 1)];
+      const b = rand(1, 10);
+      return { text: `${table} × ${b} = ?`, answer: table * b, inputType: 'number' };
+    }
+
+    if (type === 'division') {
+      const table = cfg.tables[rand(0, cfg.tables.length - 1)];
+      const b = rand(1, 10);
+      const a = table * b;
+      return { text: `${a} ÷ ${table} = ?`, answer: b, inputType: 'number' };
+    }
+
+    if (type === 'problemes') {
+      return generateProblem(cfg);
+    }
+
+    if (type === 'geometrie') {
+      return generateGeo(cfg.geoLevel);
+    }
+  }
+
+  /* ---- Problèmes ---- */
+  const FRUITS  = ['pommes', 'oranges', 'poires', 'bananes', 'fraises', 'cerises'];
+  const ANIMAUX = ['chats', 'chiens', 'poules', 'lapins', 'moutons', 'oiseaux'];
+  const OBJETS  = ['livres', 'crayons', 'billes', 'cartes', 'bonbons', 'pièces'];
+
+  function generateProblem(cfg) {
+    const M = Math.min(cfg.max, 50);
+    const type = rand(0, 3);
+    const items = [...FRUITS, ...ANIMAUX, ...OBJETS];
+    const item = items[rand(0, items.length - 1)];
+
+    if (type === 0) {
+      const a = rand(1, M), b = rand(1, M);
+      return {
+        text: `Lucas a ${a} ${item}.\nSa sœur lui donne ${b} ${item} de plus.\nCombien en a-t-il en tout ?`,
+        answer: a + b, inputType: 'number'
+      };
+    }
+    if (type === 1) {
+      let a = rand(2, M), b = rand(1, a);
+      return {
+        text: `Emma a ${a} ${item}.\nElle en donne ${b} à son ami.\nCombien lui en reste-t-il ?`,
+        answer: a - b, inputType: 'number'
+      };
+    }
+    if (type === 2 && cfg.tables) {
+      const n = cfg.tables[rand(0, cfg.tables.length - 1)];
+      const k = rand(2, 6);
+      return {
+        text: `Il y a ${k} boîtes avec ${n} ${item} chacune.\nCombien y a-t-il de ${item} en tout ?`,
+        answer: k * n, inputType: 'number'
+      };
+    }
+    // Défaut
+    const a = rand(1, M), b = rand(1, M);
+    return {
+      text: `Une boulangère a vendu ${a} pains le matin\net ${b} pains l'après-midi.\nCombien a-t-elle vendu de pains en tout ?`,
+      answer: a + b, inputType: 'number'
+    };
+  }
+
+  /* ---- Géométrie ---- */
+  const FORMES = [
+    { name: 'un carré',       sides: 4, emoji: '🟥' },
+    { name: 'un triangle',    sides: 3, emoji: '🔺' },
+    { name: 'un cercle',      sides: 0, emoji: '🟡' },
+    { name: 'un rectangle',   sides: 4, emoji: '🟦' },
+    { name: 'un pentagone',   sides: 5, emoji: '⬠' },
+    { name: 'un hexagone',    sides: 6, emoji: '⬡' },
+  ];
+
+  function generateGeo(level) {
+    const pick = rand(0, 2);
+
+    if (level === 1 || pick === 0) {
+      // Reconnaître une forme
+      const f = FORMES[rand(0, level === 1 ? 3 : FORMES.length - 1)];
+      const correct = f.sides;
+      if (correct === 0) {
+        const wrong = [3, 4, 5];
+        const choices = shuffle([0, ...wrong.slice(0,3)]);
+        return {
+          text: `${f.emoji} Combien de côtés a ${f.name} ?`,
+          answer: 0,
+          inputType: 'qcm',
+          choices: choices.map(String),
+        };
+      }
+      const wrongs = new Set();
+      while (wrongs.size < 3) {
+        const w = correct + rand(-2, 3);
+        if (w !== correct && w > 0) wrongs.add(w);
+      }
+      const choices = shuffle([correct, ...[...wrongs].slice(0,3)]);
+      return {
+        text: `${f.emoji} Combien de côtés a ${f.name} ?`,
+        answer: correct,
+        inputType: 'qcm',
+        choices: choices.map(String),
+      };
+    }
+
+    if (level >= 2 && pick === 1) {
+      // Périmètre rectangle
+      const w = rand(2, 15), h = rand(2, 15);
+      const p = 2 * (w + h);
+      return {
+        text: `📏 Un rectangle a une longueur de ${w} cm\net une largeur de ${h} cm.\nQuel est son périmètre ?`,
+        answer: p,
+        inputType: 'number',
+      };
+    }
+
+    if (level >= 3 && pick === 2) {
+      // Aire rectangle
+      const w = rand(2, 12), h = rand(2, 12);
+      return {
+        text: `📐 Un rectangle a une longueur de ${w} cm\net une largeur de ${h} cm.\nQuelle est son aire (en cm²) ?`,
+        answer: w * h,
+        inputType: 'number',
+      };
+    }
+
+    // Fallback périmètre carré
+    const s = rand(2, 15);
+    return {
+      text: `🟥 Un carré a un côté de ${s} cm.\nQuel est son périmètre ?`,
+      answer: 4 * s,
+      inputType: 'number',
+    };
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = rand(0, i);
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  /* ====================================================
+     LANCER UN EXERCICE
+  ==================================================== */
+  function startExo(exoId) {
+    currentExo = exoId;
+    questions = [];
+    for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+      questions.push(generateQuestion(exoId));
+    }
+    qIndex = 0;
+    score  = 0;
+    goTo('screen-play');
+    document.getElementById('badge-class').textContent = '🎓 ' + currentClass;
+    showQuestion();
+  }
+
+  function replay() {
+    startExo(currentExo);
+  }
+
+  /* ====================================================
+     AFFICHER UNE QUESTION
+  ==================================================== */
+  function showQuestion() {
+    answered = false;
+    const q = questions[qIndex];
+
+    document.getElementById('question-num').textContent = `Question ${qIndex + 1} sur ${TOTAL_QUESTIONS}`;
+    document.getElementById('question-text').innerHTML  = q.text.replace(/\n/g, '<br>');
+    document.getElementById('score-display').textContent = `${score} ✓`;
+    document.getElementById('progress-bar').style.width  = (qIndex / TOTAL_QUESTIONS * 100) + '%';
+
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback';
+    fb.textContent = '';
+
+    const zone = document.getElementById('input-zone');
+    zone.innerHTML = '';
+
+    const btn = document.getElementById('btn-validate');
+    btn.disabled = false;
+    btn.textContent = 'Valider ✔';
+
+    if (q.inputType === 'number') {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.id   = 'answer-input';
+      input.className = 'answer-input';
+      input.placeholder = '?';
+      input.min = '0';
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') validate(); });
+      zone.appendChild(input);
+      setTimeout(() => input.focus(), 50);
+    } else if (q.inputType === 'qcm') {
+      btn.disabled = true;
+      const grid = document.createElement('div');
+      grid.className = 'choices';
+      q.choices.forEach(c => {
+        const b = document.createElement('button');
+        b.className = 'choice-btn';
+        b.textContent = c;
+        b.onclick = () => selectChoice(b, c, q.answer);
+        grid.appendChild(b);
+      });
+      zone.appendChild(grid);
+    }
+  }
+
+  /* ====================================================
+     QCM : sélection
+  ==================================================== */
+  function selectChoice(btn, value, correctAnswer) {
+    if (answered) return;
+    answered = true;
+
+    const val = isNaN(value) ? value : Number(value);
+    const correct = isNaN(correctAnswer) ? correctAnswer : Number(correctAnswer);
+
+    document.querySelectorAll('.choice-btn').forEach(b => {
+      const bVal = isNaN(b.textContent) ? b.textContent : Number(b.textContent);
+      if (bVal === correct) b.classList.add('correct');
+    });
+
+    if (val === correct) {
+      btn.classList.add('correct');
+      score++;
+      showFeedback(true, correct);
+    } else {
+      btn.classList.add('wrong');
+      showFeedback(false, correct);
+    }
+
+    const btnV = document.getElementById('btn-validate');
+    btnV.disabled = false;
+    btnV.textContent = qIndex < TOTAL_QUESTIONS - 1 ? 'Question suivante →' : 'Voir mes résultats 🏆';
+  }
+
+  /* ====================================================
+     VALIDER (réponse numérique)
+  ==================================================== */
+  function validate() {
+    const q = questions[qIndex];
+
+    if (q.inputType === 'number') {
+      if (answered) {
+        nextQuestion();
+        return;
+      }
+      const input = document.getElementById('answer-input');
+      const val   = parseInt(input.value, 10);
+      if (isNaN(val)) { input.focus(); return; }
+
+      answered = true;
+      input.disabled = true;
+
+      if (val === q.answer) {
+        score++;
+        showFeedback(true, q.answer);
+      } else {
+        showFeedback(false, q.answer);
+      }
+
+      const btn = document.getElementById('btn-validate');
+      btn.textContent = qIndex < TOTAL_QUESTIONS - 1 ? 'Question suivante →' : 'Voir mes résultats 🏆';
+    } else {
+      // QCM — bouton devient "suivant"
+      if (answered) nextQuestion();
+    }
+  }
+
+  function showFeedback(isCorrect, correctAnswer) {
+    const fb = document.getElementById('feedback');
+    if (isCorrect) {
+      const msgs = ['Excellent ! 🎉', 'Bravo ! 🌟', 'Super ! ✨', 'Parfait ! 🏆', 'Génial ! 🚀'];
+      fb.textContent = msgs[rand(0, msgs.length - 1)];
+      fb.className = 'feedback correct';
+    } else {
+      fb.textContent = `Pas tout à fait… La bonne réponse était ${correctAnswer}. 💪`;
+      fb.className = 'feedback wrong';
+    }
+  }
+
+  function nextQuestion() {
+    qIndex++;
+    if (qIndex >= TOTAL_QUESTIONS) {
+      showResult();
+    } else {
+      showQuestion();
+    }
+  }
+
+  /* ====================================================
+     RÉSULTATS
+  ==================================================== */
+  function showResult() {
+    goTo('screen-result');
+
+    const pct = score / TOTAL_QUESTIONS;
+
+    let emoji, title, msg, stars;
+    if (pct === 1) {
+      emoji = '🏆'; title = 'Parfait !'; stars = '⭐⭐⭐';
+      msg = `Tu as eu ${score}/${TOTAL_QUESTIONS}. C'est un sans-faute ! Tu es incroyable !`;
+    } else if (pct >= 0.8) {
+      emoji = '🌟'; title = 'Excellent !'; stars = '⭐⭐⭐';
+      msg = `Tu as eu ${score}/${TOTAL_QUESTIONS}. Très bon travail, continue comme ça !`;
+    } else if (pct >= 0.6) {
+      emoji = '😊'; title = 'Bien joué !'; stars = '⭐⭐';
+      msg = `Tu as eu ${score}/${TOTAL_QUESTIONS}. C'est bien ! Encore un peu d'entraînement et tu seras au top !`;
+    } else if (pct >= 0.4) {
+      emoji = '💪'; title = 'Continue !'; stars = '⭐';
+      msg = `Tu as eu ${score}/${TOTAL_QUESTIONS}. Ne lâche pas, tu vas y arriver avec de la pratique !`;
+    } else {
+      emoji = '📚'; title = 'À réviser !'; stars = '⭐';
+      msg = `Tu as eu ${score}/${TOTAL_QUESTIONS}. Pas d'inquiétude ! Entraîne-toi encore et tu progresseras vite.`;
+    }
+
+    document.getElementById('result-emoji').textContent = emoji;
+    document.getElementById('result-title').textContent = title;
+    document.getElementById('result-stars').textContent = stars;
+    document.getElementById('result-score').textContent = `${score} / ${TOTAL_QUESTIONS}`;
+    document.getElementById('result-msg').textContent = msg;
+  }
+</script>
+</body>
+</html>
